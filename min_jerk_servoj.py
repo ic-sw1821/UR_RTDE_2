@@ -9,7 +9,6 @@ import time
 from matplotlib import pyplot as plt
 from min_jerk_planner_translation import PathPlanTranslation
 
-
 # ------------- Functions -------------
 # reads the set-point that was just sent (likely the robot's current pos)
 def setp_to_list(setp):
@@ -24,13 +23,10 @@ def list_to_setp(setp, list):
         setp.__dict__["input_double_register_%i" % i] = list[i]
     return setp
 
-
 # ------------- Ethernet -------------
 ROBOT_HOST = '192.168.1.10' # Found in system network - IP-address
 ROBOT_PORT = 30004
 config_filename = 'control_loop_configuration.xml'  # specify xml file for data synchronization
-
-# keep_running = True, keep or delete?
 
 logging.getLogger().setLevel(logging.INFO) # generates log of how the robot did for debugging
 
@@ -39,7 +35,6 @@ conf = rtde_config.ConfigFile(config_filename)
 state_names, state_types = conf.get_recipe('state')  # Define recipe for access to robot output ex. joints,tcp etc.
 setp_names, setp_types = conf.get_recipe('setp')  # Define recipe for access to robot input
 watchdog_names, watchdog_types= conf.get_recipe('watchdog')
-
 
 # ------------- Connection (no change needed) -------------
 # establishes connection
@@ -57,7 +52,6 @@ con.get_controller_version()
 
 # ------------------- Communications (no change needed) ----------------------------
 FREQUENCY = 500  # send data in 500 Hz instead of default 125Hz
-
 # allows us to receive from the robot
 con.send_output_setup(state_names, state_types, FREQUENCY)
 # configure an input package that the external application will send to the robot controller
@@ -81,11 +75,13 @@ watchdog.input_int_register_0 = 0
 if not con.send_start():
     sys.exit()
 
-# Defining key points ============================================================
+# ------------------- Defining Poses ----------------------
 # first 3 values are xyz, last 3 are orientations
-start_pose = [0.62899, -0.03993, 0.08944, 3.1415, 0.0001, 0.0001]
-desired_pose = [0.69436, 0.17108, -0.08862, 3.1416, 0.0000, 0.0002]
+start_pose = [0.62899, -0.03993, 0.08944, 3.1415, 0.0001, 0.0001] # scratch 1
+desired_pose = [0.69436, 0.17108, -0.08862, 3.1416, 0.0000, 0.0002] # scratch 2
+scratch_3 = [0.69436, 0.17108, -0.08862, 3.1416, 0.0000, 0.0002]
 
+# neglecting the orientation values, since we are not dealing with orientation for servoj()
 orientation_const = start_pose[3:]
 
 # Prints the initial pose of the tool
@@ -125,7 +121,7 @@ while True:
         print('Proceeding to mode 2\n')
         break
 
-
+#   ------------  mode = 2 (servoj) -----------
 print("-------Executing servoJ  -----------\n")
 watchdog.input_int_register_0 = 2
 con.send(watchdog)  # sending mode == 2
@@ -138,8 +134,6 @@ plotter = True
 
 planner = PathPlanTranslation(start_pose, desired_pose, trajectory_time)
 # ----------- minimum jerk preparation -----------------------
-
-
 if plotter:
     time_plot = []
 
@@ -158,7 +152,6 @@ if plotter:
     vx = []
     vy = []
     vz = []
-
 #   -------------------------Control loop --------------------
 state = con.receive()
 tcp = state.actual_TCP_pose
@@ -223,7 +216,6 @@ con.send(watchdog)
 con.send_pause()
 # disconnect from UR10
 con.disconnect()
-
 
 if plotter:
     # ----------- position -------------
