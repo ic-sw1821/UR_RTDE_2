@@ -11,13 +11,14 @@ from min_jerk_planner_translation import PathPlanTranslation
 
 
 # ------------- Functions -------------
+# reads the set-point that was just sent (likely the robot's current pos)
 def setp_to_list(setp):
     temp = []
     for i in range(0, 6):
         temp.append(setp.__dict__["input_double_register_%i" % i])
     return temp
 
-
+# writes our desired set-point to suitable format to be communicated
 def list_to_setp(setp, list):
     for i in range(0, 6):
         setp.__dict__["input_double_register_%i" % i] = list[i]
@@ -25,19 +26,23 @@ def list_to_setp(setp, list):
 
 
 # ------------- Ethernet -------------
-ROBOT_HOST = '192.168.1.10'
+ROBOT_HOST = '192.168.1.10' # Found in system network - IP-address
 ROBOT_PORT = 30004
 config_filename = 'control_loop_configuration.xml'  # specify xml file for data synchronization
 
-logging.getLogger().setLevel(logging.INFO)
+# keep_running = True, keep or delete?
 
+logging.getLogger().setLevel(logging.INFO) # generates log of how the robot did for debugging
+
+# reformat I/O settings from XML to Python-friendly format
 conf = rtde_config.ConfigFile(config_filename)
 state_names, state_types = conf.get_recipe('state')  # Define recipe for access to robot output ex. joints,tcp etc.
 setp_names, setp_types = conf.get_recipe('setp')  # Define recipe for access to robot input
 watchdog_names, watchdog_types= conf.get_recipe('watchdog')
 
 
-# ------------- Connection -------------
+# ------------- Connection (no change needed) -------------
+# establishes connection
 con = rtde.RTDE(ROBOT_HOST, ROBOT_PORT)
 connection_state = con.connect()
 
@@ -50,12 +55,17 @@ print("---------------Successfully connected to the robot-------------\n")
 # get controller version
 con.get_controller_version()
 
-# ------------------- Communications ----------------------------
+# ------------------- Communications (no change needed) ----------------------------
 FREQUENCY = 500  # send data in 500 Hz instead of default 125Hz
+
+# allows us to receive from the robot
 con.send_output_setup(state_names, state_types, FREQUENCY)
-setp = con.send_input_setup(setp_names, setp_types)  # Configure an input package that the external application will send to the robot controller
+# configure an input package that the external application will send to the robot controller
+setp = con.send_input_setup(setp_names, setp_types)
 watchdog = con.send_input_setup(watchdog_names, watchdog_types)
 
+# ------------------- Communications (change if .xml is changed) -------------------
+# initialization of registers, add more if you use more reigsters
 setp.input_double_register_0 = 0
 setp.input_double_register_1 = 0
 setp.input_double_register_2 = 0
@@ -64,26 +74,35 @@ setp.input_double_register_4 = 0
 setp.input_double_register_5 = 0
 
 setp.input_bit_registers0_to_31 = 0
-
+# watchdog used in .urp file to ensure the Python code is running in sync
 watchdog.input_int_register_0 = 0
 
 # start data synchronization
 if not con.send_start():
     sys.exit()
 
+# Defining key points ============================================================
+# first 3 values are xyz, last 3 are orientations
 start_pose = [0.62899, -0.03993, 0.08944, 3.1415, 0.0001, 0.0001]
 desired_pose = [0.69436, 0.17108, -0.08862, 3.1416, 0.0000, 0.0002]
 
 orientation_const = start_pose[3:]
 
+# Prints the initial pose of the tool
 state = con.receive()
 tcp1 = state.actual_TCP_pose
 print(tcp1)
 
 #   ------------  mode = 1 (Connection) -----------
+# control loop to establish connection with robot
 while True:
     print('Boolean 1 is False, please click CONTINUE on the Polyscope')
+    # receives our outputs-of-interest from robot
     state = con.receive()
+    # add our output states of interest here?
+    # e.g. s1 = state.actual_TCP_pose above
+
+    # kick watchdog
     con.send(watchdog)
     # print(f"runtime state is {state.runtime_state}")
     if state.output_bit_registers0_to_31 == True:
@@ -196,10 +215,13 @@ print(state.actual_TCP_pose)
 
 # ====================mode 3===================
 watchdog.input_int_register_0 = 3
+
+# watchdogs are used so one program waits for the other to finish before executing more code
 con.send(watchdog)
 
-
+# pause sending the values
 con.send_pause()
+# disconnect from UR10
 con.disconnect()
 
 

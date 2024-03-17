@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <rtde_config>
 	<recipe key="state">
+		<!-- What do we want the robot to send us? See 'robot controller outputs' in documentation-->
 		<field name="runtime_state" type="UINT32"/>
 		<field name="actual_q" type="VECTOR6D"/>
 		<field name="actual_TCP_force" type="VECTOR6D"/>
@@ -17,6 +18,7 @@
 	</recipe>
 
 	<recipe key="setp">
+		<!-- What do we want to send the robot?-->
 		<field name="input_double_register_0" type="DOUBLE"/>
 		<field name="input_double_register_1" type="DOUBLE"/>
 		<field name="input_double_register_2" type="DOUBLE"/>
