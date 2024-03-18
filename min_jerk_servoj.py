@@ -206,6 +206,8 @@ state = con.receive()
 print('--------------------\n')
 print(state.actual_TCP_pose)
 
+# test
+
 # ====================mode 3===================
 watchdog.input_int_register_0 = 3
 
