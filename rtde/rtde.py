@@ -119,7 +119,7 @@ class RTDE(object):
 
 
 # Controls whether you want to switch to 500 Hz
-    def send_output_setup(self, variables, types=[], frequency=500):
+    def send_output_setup(self, variables, types=[], frequency=125):
         cmd = Command.RTDE_CONTROL_PACKAGE_SETUP_OUTPUTS
         payload = struct.pack('>d', frequency)
         payload = payload + (','.join(variables).encode('utf-8'))

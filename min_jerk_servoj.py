@@ -23,7 +23,7 @@ def list_to_setp(setp, list):
     return setp
 
 # establish TCP/IP connection with robot
-ROBOT_HOST = '192.168.1.10'
+ROBOT_HOST = '192.168.1.30'
 ROBOT_PORT = 30004
 logging.getLogger().setLevel(logging.INFO) # generates log of how the robot did for debugging
 con = rtde.RTDE(ROBOT_HOST, ROBOT_PORT)
@@ -40,7 +40,7 @@ conf = rtde_config.ConfigFile(config_filename)
 state_names, state_types = conf.get_recipe('state')  # 'state' = outputs specified in .xml
 setp_names, setp_types = conf.get_recipe('setp')  # 'setp' = inputs specified in .xml
 watchdog_names, watchdog_types= conf.get_recipe('watchdog') # 'watchdog' = 'watchdog' specified in .xml
-FREQUENCY = 500  # send data in 500 Hz instead of default 125Hz
+FREQUENCY = 125  # send data in default 125Hz
 con.send_output_setup(state_names, state_types, FREQUENCY) # syncs output set-up with robot
 setp = con.send_input_setup(setp_names, setp_types) # syncs input set-up with robot
 watchdog = con.send_input_setup(watchdog_names, watchdog_types) # syncs watchdog input with robot
@@ -63,8 +63,6 @@ if not con.send_start():
 start_pose = [0.62899, -0.03993, 0.08944, 3.1415, 0.0001, 0.0001] # scratch 1
 desired_pose = [0.69436, 0.17108, -0.08862, 3.1416, 0.0000, 0.0002] # scratch 2
 scratch_3 = [0.69436, 0.17108, -0.08862, 3.1416, 0.0000, 0.0002]
-
-
 
 # waits for user to ensure both .urp and .py files are running before exchanging data
 while True:

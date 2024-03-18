@@ -1,0 +1,81 @@
+def HT_furnace_multicycle():
+  set_standard_analog_input_domain(0, 0)
+  set_standard_analog_input_domain(1, 0)
+  set_tool_analog_input_domain(0, 0)
+  set_tool_analog_input_domain(1, 0)
+  set_analog_outputdomain(0, 0)
+  set_analog_outputdomain(1, 0)
+  set_input_actions_to_default()
+  set_gravity([0.0, 0.0, 9.82])
+  set_tcp(p[0.0,0.0,0.0,0.0,0.0,0.0])
+  set_payload(0.0)
+  set_tool_voltage(0)
+  set_safety_mode_transition_hardness(0)
+  global i_var_1=-5
+
+  FORCEKIT_sock_res = False
+  FORCEKIT_suspend_thread = False
+  FORCEKIT_thread_suspended = False
+  while (not FORCEKIT_sock_res):
+    FORCEKIT_sock_res = socket_open("192.168.1.30",1000)
+    if (not FORCEKIT_sock_res):
+      popup("Could not connect to Force Torque Sensor. Make sure the the sensor is powered on and check the cabling. Click Continue to try again.", "FORCEKIT Error", False, True, blocking=True)
+    end
+  end
+
+  enable_external_ft_sensor( True, sensor_mass = 0.43, sensor_measuring_offset = [0.0, 0.0, 0.047], sensor_cog = [0.0, 0.0, 0.022] )
+  # end: URCap Installation Node
+  $ 1 "BeforeStart"
+  $ 2 "enable_external_ft_sensor( True , sensor_mass = 0.0,  sensor_measuring_offset = [0.0, 0.0, 0.0], sensor_cog = [0.0, 0.0, 0.0] )"
+  enable_external_ft_sensor(  True  , sensor_mass = 0.0,  sensor_measuring_offset = [0.0, 0.0, 0.0], sensor_cog = [0.0, 0.0, 0.0] )
+  $ 3 "sock_res≔ True "
+  global sock_res=  True  
+  $ 4 "Loop  not sock_res"
+
+  while (  not  sock_res):
+    $ 5 "sock_res=socket_open('192.168.1.30',1000)"
+    sock_res=socket_open("192.168.1.30",1000)
+  end
+
+  $ 6 "res≔''"
+  global res=""
+  $ 7 "Loop res ≟ ''"
+
+  while (res  ==  ""):
+    $ 8 "socket_send_line('TARE(1)')"
+    socket_send_line("TARE(1)")
+    $ 9 "res=socket_read_string()"
+    res=socket_read_string()
+  end
+
+  $ 10 "Robot Program"
+  $ 11 "MoveL"
+  $ 12 "Waypoint_O"
+  movel([2.8022377490997314, -1.6633952299701136, 1.943748950958252, -1.8512375990497034, 4.702803611755371, 4.382356643676758], a=1.2, v=0.25)
+  $ 13 "Waypoint_01"
+  movel([3.141570568084717, -1.3862293402301233, 1.9991850852966309, -2.1836841742144983, 4.700982093811035, 4.718151092529297], a=1.2, v=0.25)
+  $ 14 "Loop 20 times"
+  Loop_2 = 0
+  while (Loop_2 < 20):
+    $ 15 "MoveL"
+    $ 16 "Waypoint_1"
+    movel([3.141450881958008, -1.3610456625567835, 2.0216641426086426, -2.2313864866839808, 4.7010178565979, 4.717610836029053], a=0.025, v=0.01)
+    sleep(0.02)
+    force_mode(p[0.0,0.0,0.0,0.0,0.0,0.0], [0, 0, 1, 0, 0, 0], [0.0, 0.0, -6.0, 0.0, 0.0, 0.0], 2, [0.1, 0.1, 0.15, 0.3490658503988659, 0.3490658503988659, 0.3490658503988659])
+    $ 17 "Force"
+    $ 18 "Wait: 0.5"
+    sleep(0.5)
+    $ 19 "MoveL"
+    $ 20 "Waypoint_5"
+    movel(pose_add(get_forward_kin(), pose_sub(p[.603259391617, .170924219135, .287655017030, 3.141584092552, .000343872146, -.000499265297], p[.693269210526, .170935898009, .287685776731, 3.141572591660, .000465145148, -.000527707319])), a=0.2, v=0.03)
+    end_force_mode()
+    stopl(5.0)
+    $ 21 "MoveL"
+    $ 22 "Waypoint_01"
+    movel(p[.694361125692, .171080876596, .311384484782, -3.141574158158, -.000045455519, .000174480610], a=1.2, v=0.25)
+    Loop_2 = Loop_2 + 1
+  end
+  $ 29 "MoveL"
+  $ 30 "Waypoint_O"
+  movel([2.8022377490997314, -1.6633952299701136, 1.943748950958252, -1.8512375990497034, 4.702803611755371, 4.382356643676758], a=1.2, v=0.25)
+end
