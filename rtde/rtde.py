@@ -117,7 +117,7 @@ class RTDE(object):
         self.__input_config[result.id] = result
         return serialize.DataObject.create_empty(variables, result.id)
 
-
+# comment
 # Controls whether you want to switch to 500 Hz
     def send_output_setup(self, variables, types=[], frequency=125):
         cmd = Command.RTDE_CONTROL_PACKAGE_SETUP_OUTPUTS
