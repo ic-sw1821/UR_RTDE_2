@@ -207,6 +207,8 @@ print('--------------------\n')
 print(state.actual_TCP_pose)
 
 # test
+# New test
+
 
 # ====================mode 3===================
 watchdog.input_int_register_0 = 3
