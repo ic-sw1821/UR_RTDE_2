@@ -1,17 +1,17 @@
  Program
    BeforeStart
-     joints≔get_actual_joint_positions()
+     joints≔get_actual_joint_positions() // Initializes joints
      write_output_boolean_register(0, False )
      Wait: 0.01
      popup("Registers reset, run PC code and then click Continue",title="Hi Daniel",blocking= True )
      mode≔0
    Robot Program
-     write_output_boolean_register(0, True )
+     write_output_boolean_register(0, True ) // Proceeds after popup and lets computer know to move on
      sync()
-     Loop mode<3
+     Loop mode<3 // Defines 3 modes for looping
        Loop mode≟1
          MoveJ
-           joints
+           joints // Receives joint values from computer (desired initial position) and executes MoveJ
          write_output_boolean_register(0, False )
          sync()
        Loop mode≟2
