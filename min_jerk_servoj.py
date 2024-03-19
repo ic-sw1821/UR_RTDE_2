@@ -8,6 +8,8 @@ import rtde.rtde_config as rtde_config
 import time
 from matplotlib import pyplot as plt
 
+import serial.tools.list_ports
+
 # functions for writing set-points to the robot
     # converts the .xml setp format sent and converts it back into Python form
 def setp_to_list(setp):
@@ -62,6 +64,35 @@ if not con.send_start():
     # first 3 values are xyz, last 3 are orientations
 start_pose = [0.62899, -0.03993, 0.08944, 3.1415, 0.0001, 0.0001] # scratch 1
 desired_pose = [0.69436, 0.17108, -0.08862, 3.1416, 0.0000, 0.0002] # scratch 2
+
+
+# Arduino integration
+ports = serial.tools.list_ports.comports() # opens comports 
+serialInst = serial.Serial()
+
+portsList = []
+for each in ports: # reads each port into a list
+    portsList.append(str(each))
+    print(str(each)) 
+
+for i in range (len(portsList)): # finds the port the arduino is linked to
+    if "Arduino" in portsList[i]:
+        use = portsList[i].split()[0]
+        print(use)
+
+serialInst.baudrate = 9600
+serialInst.port = use # assigns the arduino port to 
+serialInst.open()
+
+# function to control the solenoid valves for the pneumatic strip feeder and the sprayer
+def valve(command):
+    while True:
+        command = input("Enter command: ")
+        serialInst.write(command.encode("utf-8"))
+
+        if command == "exit":
+            print("Program ended")
+            quit()
 
 # waits for user to ensure both .urp and .py files are running before exchanging data
 while True:
