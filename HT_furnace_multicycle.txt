@@ -17,35 +17,67 @@
      mode≔0
 
    Robot Program
-     write_output_boolean_register(0, True ) // Proceeds after popup and lets computer know to move on
+     write_output_boolean_register(0, True ) // proceeds after popup and lets computer know to move on
      sync()
-     Loop mode<3 // Defines 3 modes for looping
-       Loop mode≟1
-         MoveL
-            Waypoint_O
-            Waypoint_01
-            Loop 20 times
-                MoveL
-                    Waypoint_1
-                Force
+
+     Loop mode<4
+       Loop mode≟1 // grinding
+           write_output_boolean_register(0, True )
+           sync()
+
+           Waypoint_O // moves to start-point on first strip
+           Force // 20 N
                     Wait: 0.5
                     MoveL
-                        Waypoint_5
+                        Waypoint_12 // moves in x by +100 mm, v = 0.15 m
+           Loop 4 times
+                Waypoint_O1 // moves in x by -100 mm and y by 45 mm
+                Force // 20 N
+                    Wait: 0.5
+                    MoveL
+                        Waypoint_12  // moves in x by +100 mm, v = 0.15 m
+
+           write_output_boolean_register(0, False )
+           sync()
+
+
+       Loop mode≟2 // dipping
+           write_output_boolean_register(0, True)
+           write_output_boolean_register(32, True)
+           sync()
+
+           MoveL
+                Waypoint_O // above dipping pot
+                Waypoint_O1 // moves in z by -30 mm into dipping pot
+                write_output_boolean_register(32, False)
+                Wait: 1.0
+                Waypoint_1O // moves in z by +30 mm out of the dipping pot
+
+           write_output_boolean_register(0, False)
+           sync()
+
+
+       Loop mode≟3 // scratching (1 scratch)
+           write_output_boolean_register(0, True)
+           sync()
+
+           MoveL // moves above the scratch point
+                Waypoint_O // originally 01
+           MoveL
+                Waypoint_1 // on scratch point
+           Force // 6 N
+                Wait: 0.5
                 MoveL
-                    Waypoint_01
-            'MoveL'
-            'Force'
-            MoveL
-                Waypoint_O
+                    Waypoint_12 // moves ~100 mm in the x-direction from current pos, originally 5
 
-         MoveJ
-           joints // Receives joint values from computer (desired initial position) and executes MoveJ
-         write_output_boolean_register(0, False )
-         sync()
+           write_output_boolean_register(0, False)
+           sync()
 
-       Loop mode≟3
+       Loop mode≟4 // end program
          Halt
+
      sync()
+
 
    Thread_1
      tmp≔p[0,0,0,0,0,0]
