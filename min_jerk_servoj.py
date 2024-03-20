@@ -1,5 +1,6 @@
 # imports
 import sys
+
 sys.path.append('')
 import logging
 import rtde.rtde as rtde
@@ -11,7 +12,7 @@ from matplotlib import pyplot as plt
 import serial.tools.list_ports
 
 # functions for writing set-points to the robot
-    # converts the .xml setp format sent and converts it back into Python form
+# converts the .xml setp format sent and converts it back into Python form
 def setp_to_list(setp):
     temp = []
     for i in range(0, 6):
@@ -19,35 +20,37 @@ def setp_to_list(setp):
     return temp
 
     # writes Python array-form coordinates into .xml setp format to be sent to robot with con.send(setp)
+
+
 def list_to_setp(setp, list):
     for i in range(0, 6):
         setp.__dict__["input_double_register_%i" % i] = list[i]
     return setp
 
-# establish TCP/IP connection with robot
+# establish TCP/IP connection with robot (mode 0)
 ROBOT_HOST = '192.168.1.10'
 ROBOT_PORT = 30004
-logging.getLogger().setLevel(logging.INFO) # generates log of how the robot did for debugging
+logging.getLogger().setLevel(logging.INFO)  # generates log of how the robot did for debugging
 con = rtde.RTDE(ROBOT_HOST, ROBOT_PORT)
 connection_state = con.connect()
 while connection_state != 0:
     time.sleep(0.5)
     connection_state = con.connect()
-print("Remote connection has been established with UR10. \n")
-con.get_controller_version() # get controller version
+print("Robot connected. \n")
+con.get_controller_version()  # get controller version
 
 # sync I/O settings from .xml with robot
 config_filename = 'control_loop_configuration.xml'  # specify xml file for data synchronization
 conf = rtde_config.ConfigFile(config_filename)
 state_names, state_types = conf.get_recipe('state')  # 'state' = outputs specified in .xml
 setp_names, setp_types = conf.get_recipe('setp')  # 'setp' = inputs specified in .xml
-watchdog_names, watchdog_types= conf.get_recipe('watchdog') # 'watchdog' = 'watchdog' specified in .xml
+watchdog_names, watchdog_types = conf.get_recipe('watchdog')  # 'watchdog' = 'watchdog' specified in .xml
 FREQUENCY = 125  # send data in default 125Hz
-con.send_output_setup(state_names, state_types, FREQUENCY) # syncs output set-up with robot
-setp = con.send_input_setup(setp_names, setp_types) # syncs input set-up with robot
-watchdog = con.send_input_setup(watchdog_names, watchdog_types) # syncs watchdog input with robot
+con.send_output_setup(state_names, state_types, FREQUENCY)  # syncs output set-up with robot
+setp = con.send_input_setup(setp_names, setp_types)  # syncs input set-up with robot
+watchdog = con.send_input_setup(watchdog_names, watchdog_types)  # syncs watchdog input with robot
 
-    # initialization of inputs
+# initialization of inputs
 setp.input_double_register_0 = 0
 setp.input_double_register_1 = 0
 setp.input_double_register_2 = 0
@@ -57,31 +60,30 @@ setp.input_double_register_5 = 0
 setp.input_bit_registers0_to_31 = 0
 watchdog.input_int_register_0 = 0
 
-    # starts data synchronization capabilities, and ends program if this fails
+# starts data synchronization capabilities, and ends program if this fails
 if not con.send_start():
     sys.exit()
 
     # first 3 values are xyz, last 3 are orientations
-start_pose = [0.62899, -0.03993, 0.08944, 3.1415, 0.0001, 0.0001] # scratch 1
-desired_pose = [0.69436, 0.17108, -0.08862, 3.1416, 0.0000, 0.0002] # scratch 2
-
+start_pose = [0.62899, -0.03993, 0.08944, 3.1415, 0.0001, 0.0001]  # scratch 1
+desired_pose = [0.69436, 0.17108, -0.08862, 3.1416, 0.0000, 0.0002]  # scratch 2
 
 # Arduino integration
-ports = serial.tools.list_ports.comports() # opens comports 
+ports = serial.tools.list_ports.comports()  # opens comports
 serialInst = serial.Serial()
 
 portsList = []
-for each in ports: # reads each port into a list
+for each in ports:  # reads each port into a list
     portsList.append(str(each))
-    print(str(each)) 
+    print(str(each))
 
-for i in range (len(portsList)): # finds the port the arduino is linked to
+for i in range(len(portsList)):  # finds the port the arduino is linked to
     if "Arduino" in portsList[i]:
         use = portsList[i].split()[0]
         print(use)
 
 serialInst.baudrate = 9600
-serialInst.port = use # assigns the arduino port to 
+serialInst.port = use  # assigns the arduino port to
 serialInst.open()
 
 # function to control the solenoid valves for the pneumatic strip feeder and the sprayer
@@ -94,6 +96,7 @@ def valve(command):
             print("Program ended")
             quit()
 
+
 # waits for user to ensure both .urp and .py files are running before exchanging data
 while True:
     print('Boolean 1 is False, please click CONTINUE on the Polyscope')
@@ -104,83 +107,93 @@ while True:
         print('Boolean 1 is True, Robot Program can proceed\n')
         break
 
-length = 0.026 # total length of all blanks to be tested (in m)
-scratched_length = 0 # total length of metal scratched (in m)
+# length-related definitions
+scratches = 4 # number of scratches expected (only for testing purposes)
+leeway = 0.02  # leeway length at the end
+length = (scratches * 0.002) + leeway  # total length of all blanks to be tested (in m)
+scratched_length = 0  # total length of metal scratched (in m)
+done = 0  # switch variable to ensure sprayer/powder etc. are not activated more than once in fast loops
 
 # initial grinding (mode 1)
 watchdog.input_int_register_0 = 1
 con.send(watchdog)
-while True: # Waiting for move to finish
+while True:  # Waiting for move to finish
     state = con.receive()
     con.send(watchdog)
-    if state.output_bit_registers0_to_31 == False:
-        print('Proceeding\n')
+    if not state.output_bit_registers0_to_31:
+        print('Initial grinding finished.\n')
         break
 
-# main infinite operations loop
-while True: # Waiting for move to finish
-    # Dipping (mode 2)
+# looping dipping and scratching
+while True:
+    # dipping (mode 2)
     watchdog.input_int_register_0 = 2
     con.send(watchdog)
+    done = 0
     while True:
         state = con.receive()
         con.send(watchdog)
 
-        if state.output_bit_registers32_to_63 == False:
+        if (not state.output_bit_registers32_to_63) and (done == 0):
             # valve.powder()
-            print('Powdering\n')
+            valve(5)
+            print('Powder sprayed. \n')
+            done = 1
 
         if state.output_bit_registers0_to_31 == False:
-            print('Proceeding\n')
+            print('Dipping finished. \n')
             break
 
-    # Scratching (mode 3)
+    # scratching (mode 3)
     i = 0
-    while i<3:
+    while i < 3:
         i = i + 1
+        done = 0
 
-        # valve.feed()
-        time.sleep(0.3)
+        # valve(1) # feeds by 0.002 mm
+        time.sleep(0.5)
 
         watchdog.input_int_register_0 = 3
         con.send(watchdog)
 
-        # valve.spray(1)
+        # valve(3) # turns on spray
 
         while True:  # Waiting for 1 scratch to finish
             state = con.receive()
             con.send(watchdog)
 
-            if state.actual_TCP_pose[2] > 0.3:
+            if (state.actual_TCP_pose[2] > 0.3) and (done == 0):
                 # valve.spray(0)
-                print('Spray off\n')
+                # valve(4)
+                print('Lubricant sprayed. \n')
+                done = 1
 
-            if state.output_bit_registers0_to_31 == False:
+            if not state.output_bit_registers0_to_31:
                 # valve.spray(0)
+                # valve(4)
                 scratched_length = scratched_length + 0.002  # increments fed amount
-                print('Proceeding\n')
+                print('Scratch finished. \n')
                 break
-        if scratched_length >= (length-0.02):
+        if scratched_length >= (length - leeway):
             break
-    if scratched_length >= (length-0.02):
+    if scratched_length >= (length - leeway):
         break
 
-# initial grinding (mode 1)
+# end grinding (mode 1)
 watchdog.input_int_register_0 = 1
 con.send(watchdog)
-while True: # Waiting for move to finish
+while True:  # Waiting for move to finish
     state = con.receive()
     con.send(watchdog)
     if state.output_bit_registers0_to_31 == False:
-        print('Proceeding\n')
+        print('End grinding finished.\n')
         break
 
-# mode 4 - end of operation
+# disconnect (mode 4)
 watchdog.input_int_register_0 = 4
 con.send(watchdog)
-con.send_pause() # pause sending the values
-con.disconnect() # disconnect from UR10
+con.send_pause()  # pause sending the values
+con.disconnect()  # disconnect from UR10
 
 # list_to_setp(setp, start_pose)  # store start_pose in setp format
 # con.send(setp) # pass setp to .urp program to execute on robot
-
