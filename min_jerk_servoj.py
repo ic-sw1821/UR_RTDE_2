@@ -157,6 +157,7 @@ while True:
         con.send(watchdog)
 
         # valve(3) # turns on spray
+        # a
 
         while True:  # Waiting for 1 scratch to finish
             state = con.receive()
