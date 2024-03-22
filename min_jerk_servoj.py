@@ -5,9 +5,11 @@ sys.path.append('')
 import logging
 import rtde.rtde as rtde
 import rtde.rtde_config as rtde_config
+import rtde.csv_writer as csvWriter
 
 import time
 from matplotlib import pyplot as plt
+import numpy as np
 
 import serial.tools.list_ports
 
@@ -45,6 +47,7 @@ conf = rtde_config.ConfigFile(config_filename)
 state_names, state_types = conf.get_recipe('state')  # 'state' = outputs specified in .xml
 setp_names, setp_types = conf.get_recipe('setp')  # 'setp' = inputs specified in .xml
 watchdog_names, watchdog_types = conf.get_recipe('watchdog')  # 'watchdog' = 'watchdog' specified in .xml
+# output_names, output_types = conf.get_recipe('out')
 FREQUENCY = 125  # send data in default 125Hz
 con.send_output_setup(state_names, state_types, FREQUENCY)  # syncs output set-up with robot
 setp = con.send_input_setup(setp_names, setp_types)  # syncs input set-up with robot
@@ -64,7 +67,7 @@ watchdog.input_int_register_0 = 0
 if not con.send_start():
     sys.exit()
 
-    # first 3 values are xyz, last 3 are orientations
+# first 3 values are xyz, last 3 are orientations
 start_pose = [0.62899, -0.03993, 0.08944, 3.1415, 0.0001, 0.0001]  # scratch 1
 desired_pose = [0.69436, 0.17108, -0.08862, 3.1416, 0.0000, 0.0002]  # scratch 2
 
@@ -124,6 +127,9 @@ while True:  # Waiting for move to finish
         print('Initial grinding finished.\n')
         break
 
+force = np.empty((scratches, 1))
+position = np.empty((scratches, 1))
+
 # looping dipping and scratching
 while True:
     # dipping (mode 2)
@@ -157,11 +163,18 @@ while True:
         con.send(watchdog)
 
         # valve(3) # turns on spray
-
-        while True:  # Waiting for 1 scratch to finish
+        keepRunning = True
+        while keepRunning:  # Waiting for 1 scratch to finish
             state = con.receive()
             con.send(watchdog)
 
+            state = con.receive() 
+            if state is not None:
+                forceXY = state.actual_TCP_force[:1]
+                posX = state.actual_TCP_pose[0]
+                force[scratched_length//0.002] = np.append(force[scratched_length//0.002], forceXY)
+                position[scratched_length//0.002] = np.append(position[scratched_length//0.002], posX)
+            
             if (state.actual_TCP_pose[2] > 0.3) and (done == 0):
                 # valve.spray(0)
                 # valve(4)
@@ -173,7 +186,7 @@ while True:
                 # valve(4)
                 scratched_length = scratched_length + 0.002  # increments fed amount
                 print('Scratch finished. \n')
-                break
+                keepRunning = False
         if scratched_length >= (length - leeway):
             break
     if scratched_length >= (length - leeway):
@@ -189,6 +202,9 @@ while True:  # Waiting for move to finish
         print('End grinding finished.\n')
         break
 
+force.tofile("Force data.csv", sep = ",")
+position.tofile("Postion data.csv", sep = ",")
+
 # disconnect (mode 4)
 watchdog.input_int_register_0 = 4
 con.send(watchdog)
@@ -197,3 +213,6 @@ con.disconnect()  # disconnect from UR10
 
 # list_to_setp(setp, start_pose)  # store start_pose in setp format
 # con.send(setp) # pass setp to .urp program to execute on robot
+
+
+
