@@ -42,7 +42,7 @@ print("Robot connected. \n")
 con.get_controller_version()  # get controller version
 
 # sync I/O settings from .xml with robot
-config_filename = 'control_loop_configuration.xml'  # specify xml file for data synchronization
+config_filename = '../control_loop_configuration.xml'  # specify xml file for data synchronization
 conf = rtde_config.ConfigFile(config_filename)
 state_names, state_types = conf.get_recipe('state')  # 'state' = outputs specified in .xml
 setp_names, setp_types = conf.get_recipe('setp')  # 'setp' = inputs specified in .xml
