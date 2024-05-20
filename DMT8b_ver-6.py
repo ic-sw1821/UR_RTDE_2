@@ -10,6 +10,7 @@ import rtde.csv_writer as csvWriter
 import time
 from matplotlib import pyplot as plt
 import numpy as np
+import csv
 
 
 # import serial.tools.list_ports
@@ -131,6 +132,7 @@ while True:  # Waiting for move to finish
 
 force = np.array([])
 position = np.array([])
+speed = np.array([])
 
 # looping dipping and scratching
 while True:
@@ -186,9 +188,9 @@ while True:
                 # scratchNo = 0
                 # if state is not None:
                 forceXYZ = state.actual_TCP_force[:3]
-                posX = state.actual_TCP_pose[:3]
+                posXYZ = state.actual_TCP_pose[:3]
                 force = np.append(force, forceXYZ)
-                position = np.append(position, posX)
+                position = np.append(position, posXYZ)
             elif (state.output_bit_registers32_to_63 == 1) and (done == 2):
                 print('Force not recording.')
                 # done = 4
@@ -206,15 +208,25 @@ while True:
     if scratched_length >= (length - leeway):
         break
 
-print(force)
-print(position)
+
+# data collection 
 force = force.reshape((len(force)//3), 3)
 position = position.reshape((len(position)//3), 3)
-print(force)
-print(position)
-# force.reshape((len(force)//scratches, scratches))
-force.tofile("walter2 force.csv", sep=",")
-position.tofile("steven2 Position data.csv", sep=",")
+plotNoScratch = len(force) // scratches
+time = np.linspace(0, plotNoScratch*1/FREQUENCY, plotNoScratch)
+time = time.reshape(len(time), 1)
+headerList = ["Time", "Force X", "Force Y", "Force Z", "Postion X", "Position Y", "Position Z"]
+for i in range(1,scratches+1):
+    # scratch data for each scratch
+    scratchData = np.concatenate((time, 
+                                  force[(i-1)*plotNoScratch:i*plotNoScratch],
+                                   position[(i-1)*plotNoScratch:i*plotNoScratch]),
+                                   axis=1)
+    with open("scratch" + i + "file.csv") as file:
+        writer = csv.writer(file)
+        writer.writerow(headerList)
+        writer.writerow(scratchData)
+
 
 
 # end grinding (mode 1)
