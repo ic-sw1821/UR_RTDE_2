@@ -1,8 +1,6 @@
  # Arduino integration
 
-
 import serial.tools.list_ports
-
 
 ports = serial.tools.list_ports.comports()  # opens comports
 portsList = []
@@ -20,13 +18,14 @@ serialInst.open()
 
 # function to control the solenoid valves for the pneumatic strip feeder and the sprayer
 def valve():
-    print(5)
     while True:
         command = input("Enter command: ")
-        serialInst.write(command.encode("utf-8"))
+        serialInst.write(bytes(command, "utf-8"))
 
         if command == "exit":
+            serialInst.close()
             print("Program ended")
             quit()
+    
 
 valve()
