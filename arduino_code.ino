@@ -19,11 +19,12 @@ void loop() {
       delay(1000);
   
     }
-    // sprayer 1 solenoid valve
+    // turn on sprayer 
     else if (msg == "3"){
       digitalWrite(sprayer, HIGH);
-      // digitalWrite(LED_BUILTIN, HIGH);
       delay(1000);
+    }
+    else if (msg == "4"){ // turn off spray valve
       digitalWrite(sprayer, LOW);
       delay(1000);
     }

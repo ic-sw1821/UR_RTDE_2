@@ -169,8 +169,7 @@ while True:
             con.send(watchdog)
 
             if (state.output_bit_registers32_to_63 == 0) and (done == 0):
-                # valve.spray(0)
-                # valve(4)
+                # valve(4) #turn off spray
                 print('Lubricant sprayed. \n')
                 done = 1
             elif (state.output_bit_registers32_to_63 == 1) and (done == 1):
