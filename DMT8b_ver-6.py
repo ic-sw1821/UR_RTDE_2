@@ -169,19 +169,16 @@ while True:
             con.send(watchdog)
 
             if (state.output_bit_registers32_to_63 == 0) and (done == 0):
-                # valve(4) #turn off spray
                 print('Lubricant sprayed. \n')
                 done = 1
             elif (state.output_bit_registers32_to_63 == 1) and (done == 1):
                 # spray off
-                # valve(5)
+                # valve(4)
                 print('Lubricant spraying stopped. \n')
                 done = 2
             elif (state.output_bit_registers32_to_63 == 0) and (done == 2):
                 print('Force recording.')
                 state = con.receive()
-                # scratchNo = 0
-                # if state is not None:
                 forceXYZ = state.actual_TCP_force[:3]
                 posXYZ = state.actual_TCP_pose[:3]
                 force = np.append(force, forceXYZ)
@@ -191,8 +188,6 @@ while True:
                 # done = 4
 
             if not state.output_bit_registers0_to_31:
-                # valve.spray(0)
-                # valve(4)
                 scratched_length = scratched_length + 0.002  # increments fed amount
                 # scratchNo += 1
                 print('Scratch finished. \n')
