@@ -2,9 +2,11 @@ int stripFeeder = 2;
 int sprayer = 7;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(112500);
   pinMode(stripFeeder, OUTPUT);
   pinMode(sprayer, OUTPUT);
+  digitalWrite(stripFeeder, HIGH);
+  digitalWrite(sprayer, HIGH);
 }
 
 void loop() {
@@ -13,20 +15,20 @@ void loop() {
 
     // strip feeder solenoid valve
     if (msg == "1"){
-      digitalWrite(stripFeeder, HIGH);
-      delay(1000);
       digitalWrite(stripFeeder, LOW);
-      delay(1000);
-  
+      delay(100);
+      digitalWrite(stripFeeder, HIGH);
+      Serial.println("Strip feeder activated");  
     }
-    // turn on sprayer 
+    // sprayer 1 solenoid valve
     else if (msg == "3"){
-      digitalWrite(sprayer, HIGH);
-      delay(1000);
-    }
-    else if (msg == "4"){ // turn off spray valve
       digitalWrite(sprayer, LOW);
-      delay(1000);
+      Serial.println("Sprayer ON");
+    }
+    else if (msg == "4"){
+      digitalWrite(sprayer, HIGH);
+      Serial.println("Sprayer OFF");
     }
   }
 }
+
