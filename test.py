@@ -59,12 +59,21 @@ def find_arduino_port():
 def valve(command):
     serialInst.write(bytes(command, "utf-8"))
     time.sleep(0.1)  # Small delay to ensure command is sent
-    if serialInst.in_waiting > 0:
-        response = serialInst.readline().decode("utf-8").strip()
-        print(response)
-    if command == "exit":
-        serialInst.close()
-        print("Program ended")
+    print(5)
+    bytesReceived = False
+    while bytesReceived == False:
+        if serialInst.in_waiting > 0:
+            response = serialInst.readline().decode("utf-8").strip()
+            end = time.time()
+            print("function:", end - start)
+            print(response)
+            bytesReceived = True
+        if command == "exit":
+            end = time.time()
+            print("end:", end - start)
+            serialInst.close()
+            print("Program ended")
+            bytesReceived = True
 
 # Find and connect to the Arduino
 arduino_port = find_arduino_port()
@@ -72,14 +81,25 @@ if arduino_port is None:
     print("Arduino not found")
 else:
     print(f"Connecting to Arduino on port {arduino_port}")
-    serialInst = serial.Serial(port=arduino_port, baudrate=9600, timeout=1)
+    serialInst = serial.Serial(port=arduino_port, baudrate=112500, timeout=None)
+    start = time.time()
     time.sleep(2)  # Wait for the connection to establish
-
+    print(time.time()-start)
     # Example usage
-    valve("1")
-    time.sleep(2)
-    valve("3")
-    time.sleep(2)
-    valve("4")
-    time.sleep(2)
-    valve("exit")
+# if arduino_port is not None:
+valve("1")
+
+start = time.time()
+# time.sleep(1.36)
+print(time.time()-start)
+valve("3")
+
+start = time.time()
+# time.sleep(1.11)
+print(time.time()-start)
+valve("4")
+
+start = time.time()
+# time.sleep(1.11)
+print(time.time()-start)
+valve("exit")

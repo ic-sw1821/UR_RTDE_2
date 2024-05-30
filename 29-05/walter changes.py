@@ -148,14 +148,12 @@ while True:
 
             if (state.output_bit_registers32_to_63 == 0) and (done == 0):
                 valve("3")
-                # valve("exit")
+                valve("exit")
                 print('Lubricant sprayed. \n')
                 done = 1
             elif (state.output_bit_registers32_to_63 == 1) and (done == 1):
-                # activate("4") # strip feeder on/off
                 valve("4")
                 valve("exit")
-
                 print('Lubricant spraying stopped. \n')
                 done = 2
             elif (state.output_bit_registers32_to_63 == 0) and (done == 2):

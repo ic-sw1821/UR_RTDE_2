@@ -167,9 +167,8 @@ while True:
             print(f"Connecting to Arduino on port {arduino_port}")
             serialInst = serial.Serial(port=arduino_port, baudrate=9600, timeout=1)
             time.sleep(connectionTime)  # Wait for the connection to establish
-            # Example usage`
             valve("3")
-            time.sleep(actuationTime)
+            # time.sleep(actuationTime)
             valve("exit")
         keepRunning = True
         while keepRunning:  # Waiting for 1 scratch to finish
