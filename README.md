@@ -4,7 +4,7 @@ This repository contains a robust Python implementation of RTDE-integration with
 #### --- What are the files in this repository? ---
 `DMT08b_9.urp`: URScript to be transfered and ran on the UR10's teaching-pendent.
 
-'arduino_code.ino': Arduino code to be uploaded to the Arduino via the Arduino IDE.
+`arduino_code.ino`: Arduino code to be uploaded to the Arduino via the Arduino IDE.
 
 `rtde (folder)`: contains all the files needed for RTDE communication taken from: 
 https://www.universal-robots.com/articles/ur/interface-communication/real-time-data-exchange-rtde-guide/
