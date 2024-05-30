@@ -18,4 +18,3 @@ After downloading the rtde folder as well as all the python packages in this rep
 1) Run the urp file on the robot till a "Continue" button appears
 2) Run the python script
 3) Click "Continue" on the polyscope
-4) Try to look utterly unimpressed whilst the audience gushes and squeals around you
