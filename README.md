@@ -1,11 +1,10 @@
-## Servoj_RTDE_UR5
-Implementation of servoj() using RTDE in python
+## UR_RTDE_2
+Implementation of RTDE integration with UR10 and serial-comms with Arduino for 2023-24 UltraMan DMT project.
 
 #### --- What are the files in this repository? ---
-`control_loop_configuration.xml`: contains list of the registers we want to read and overwrite
+`control_loop_configuration.xml`: contains list of the registers to be read and overwritten.
 
-`min_jerk_translation.py`: class containing min_jerk trajecotry for position only in cartesian space, as well as small example usage function
-https://mika-s.github.io/python/control-theory/trajectory-generation/2017/12/06/trajectory-generation-with-a-minimum-jerk-trajectory.html
+`TheChosen3.py`: main Python code for coordinating with .urp code and Arduino.
 
 `min_jerk_servoj.py`: main script responsible for communication with the robot. It communicates with packages stored in **rtde** folder so make sure you download all the required files.
 
