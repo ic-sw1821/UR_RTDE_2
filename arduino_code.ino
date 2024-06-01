@@ -29,6 +29,25 @@ void loop() {
       digitalWrite(sprayer, HIGH);
       Serial.println("Sprayer OFF");
     }
+    else if (msg == "5"){
+      digitalWrite(stripFeeder, LOW);
+      digitalWrite(sprayer, LOW);
+      Serial.println("Sprayer ON");
+      delay(100);
+      digitalWrite(stripFeeder, HIGH);
+      Serial.println("Strip feeder activated");  
+      delay(1500);
+      digitalWrite(sprayer, HIGH);
+      Serial.println("Sprayer OFF");      
+    }
+    else if (msg == "6"){
+      delay(1000);
+      digitalWrite(sprayer, LOW);
+      Serial.println("Dipping ON");
+      delay(1000);
+      digitalWrite(sprayer, HIGH);
+      Serial.println("Dipping OFF");      
+    }
   }
 }
 
