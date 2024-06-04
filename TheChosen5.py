@@ -152,12 +152,12 @@ while True:
     valve("3")
     start = time.time()
     # CHANGE
-    # if lube_mode == 1:
-    #     valve("3")
-    #     valve("1")
-    # elif lube_mode == 2:
-    #     valve("6")
-    # valve("1")
+    if lube_mode == 1:
+        # valve("3")
+        # valve("1")
+        valve("5")
+    elif lube_mode == 2:
+        valve("1")
     keepRunning = True
     while keepRunning and scratches > 0:  # Waiting for 1 scratch to finish
         # valve("3")
@@ -202,19 +202,19 @@ con.send_pause()  # pause sending the values
 con.disconnect()  # disconnect from UR10
 
 # data collection
-# force = force.reshape((len(force)//3), 3)
-# position = position.reshape((len(position)//3), 3)
-# plotNoScratch = len(force) // scratch_count
-# time = np.linspace(0, plotNoScratch*1/FREQUENCY, plotNoScratch)
-# time = time.reshape(len(time), 1)
-# headerList = ["Time", "Force X", "Force Y", "Force Z", "Postion X", "Position Y", "Position Z"]
-# for i in range(1, scratch_count + 1):
-#     # scratch data for each scratch
-#     scratchData = np.concatenate((time,
-#                                   force[(i-1)*plotNoScratch:i*plotNoScratch],
-#                                    position[(i-1)*plotNoScratch:i*plotNoScratch]),
-#                                    axis=1)
-#     scratchData = np.append([headerList], scratchData, axis=0)
-#     df = pd.DataFrame(scratchData)
-#     name = datetime.datetime.now().replace("/", "-") + " Scratch" + str(i) + "file.csv"
-#     df.to_csv(name, index=False)
+force = force.reshape((len(force)//3), 3)
+position = position.reshape((len(position)//3), 3)
+plotNoScratch = (len(force)-1) // scratches
+time = np.linspace(0, plotNoScratch*1/FREQUENCY, plotNoScratch)
+time = time.reshape(len(time), 1)
+headerList = ["Time", "Force X", "Force Y", "Force Z", "Postion X", "Position Y", "Position Z"]
+for i in range(1, scratch_count + 1):
+    # scratch data for each scratch
+    scratchData = np.concatenate((time,
+                                  force[(i-1)*plotNoScratch:i*plotNoScratch],
+                                   position[(i-1)*plotNoScratch:i*plotNoScratch]),
+                                   axis=1)
+    scratchData = np.append([headerList], scratchData, axis=0)
+    df = pd.DataFrame(scratchData)
+    name = datetime.datetime.now().replace("/", "-") + " Scratch" + str(i) + "file.csv"
+    df.to_csv(name, index=False)
