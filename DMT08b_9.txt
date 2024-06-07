@@ -1,4 +1,5 @@
  Program
+   Init Variables
    BeforeStart
      enable_external_ft_sensor( True , sensor_mass = 0.0,  sensor_measuring_offset = [0.0, 0.0, 0.0], sensor_cog = [0.0, 0.0, 0.0] )
      sock_res≔ True 
@@ -24,7 +25,7 @@
          MoveL
            Waypoint_GO_set
          Force
-           Wait: 1.0
+           Wait: 0.7
            MoveL
              Waypoint_3
          Loop 4 times
@@ -35,7 +36,7 @@
            MoveL
              Waypoint_G4O
            Force
-             Wait: 1.0
+             Wait: 0.7
              MoveL
                Waypoint_3
          MoveL
@@ -51,6 +52,7 @@
          sync()
          MoveL
            Waypoint_SO1
+         Wait: 0.2
          'write_output_boolean_register(32, True)'
          'sync()'
          MoveL
@@ -60,11 +62,13 @@
          'sync()'
          'write_output_boolean_register(32, True)'
          'sync()'
-         'Force'
          write_output_boolean_register(32, False)
          sync()
-         MoveL
-           Waypoint_S23
+         Force
+           MoveL
+             Waypoint_S23
+         write_output_boolean_register(32, True)
+         sync()
          write_output_boolean_register(0, False)
          sync()
        Loop mode==4
