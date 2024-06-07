@@ -1,0 +1,79 @@
+ Program
+   BeforeStart
+     enable_external_ft_sensor( True , sensor_mass = 0.0,  sensor_measuring_offset = [0.0, 0.0, 0.0], sensor_cog = [0.0, 0.0, 0.0] )
+     sock_res≔ True 
+     Loop  not sock_res
+       sock_res=socket_open("192.168.1.30",1000)
+     res≔""
+     Loop res ≟ ""
+       socket_send_line("TARE(1)")
+       res=socket_read_string()
+     write_output_boolean_register(0, False)
+     Wait: 0.01
+     popup("Registers reset, run PC code and then click Continue", title="Hi DMT", blocking = True)
+     mode≔0
+   Robot Program
+     write_output_boolean_register(0, True)
+     sync()
+     Loop mode<4
+       MoveL
+         Waypoint_2
+       Loop mode==1
+         write_output_boolean_register(0, True)
+         sync()
+         MoveL
+           Waypoint_GO_set
+         Force
+           Wait: 1.0
+           MoveL
+             Waypoint_3
+         Loop 4 times
+           MoveL
+             Waypoint_1
+           MoveL
+             Waypoint_G23
+           MoveL
+             Waypoint_G4O
+           Force
+             Wait: 1.0
+             MoveL
+               Waypoint_3
+         MoveL
+           Waypoint_2
+         write_output_boolean_register(0, False)
+         sync()
+       'Loop mode==2'
+       Loop mode==3
+         write_output_boolean_register(0, True)
+         write_output_boolean_register(32, True)
+         MoveL
+           Waypoint_SO_set
+         sync()
+         MoveL
+           Waypoint_SO1
+         'write_output_boolean_register(32, True)'
+         'sync()'
+         MoveL
+           Waypoint_S12
+         Wait: 0.5
+         'write_output_boolean_register(32, False)'
+         'sync()'
+         'write_output_boolean_register(32, True)'
+         'sync()'
+         'Force'
+         write_output_boolean_register(32, False)
+         sync()
+         MoveL
+           Waypoint_S23
+         write_output_boolean_register(0, False)
+         sync()
+       Loop mode==4
+         Halt
+     sync()
+   Thread_1
+     tmp≔p[0,0,0,0,0,0]
+     Loop
+       Script: pose_register.script
+       sync()
+       mode≔read_input_integer_register(0)
+       sync()

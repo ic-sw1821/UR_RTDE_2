@@ -1,0 +1,223 @@
+def DMT08b_9():
+  set_gravity([0.0, 0.0, 9.82])
+  set_safety_mode_transition_hardness(0)
+  set_tcp(p[0.0,0.0,0.0,0.0,0.0,0.0])
+  set_payload(0.01)
+  set_tool_voltage(0)
+  set_standard_analog_input_domain(0, 0)
+  set_standard_analog_input_domain(1, 0)
+  set_tool_analog_input_domain(0, 0)
+  set_tool_analog_input_domain(1, 0)
+  set_analog_outputdomain(0, 0)
+  set_analog_outputdomain(1, 0)
+  set_input_actions_to_default()
+  step_count_05b0a11e_8c64_4a27_a11e_1fe8f8cb2d27 = 0.0
+  thread Step_Counter_Thread_f29923cb_68e5_44d6_90fa_292e24aedeff():
+    while (True):
+      step_count_05b0a11e_8c64_4a27_a11e_1fe8f8cb2d27 = step_count_05b0a11e_8c64_4a27_a11e_1fe8f8cb2d27 + 1.0
+      sync()
+    end
+  end
+  run Step_Counter_Thread_f29923cb_68e5_44d6_90fa_292e24aedeff()
+  global i_var_1=-5
+  # begin: URCap Installation Node
+  #   Source: External Control, 1.0.5, FZI Research Center for Information Technology
+  #   Type: External Control
+  # end: URCap Installation Node
+  # begin: URCap Installation Node
+  #   Source: Web dashboard, 1.8.1, Kim Nyholm SL
+  #   Type: Web dashboard
+  # end: URCap Installation Node
+  # begin: URCap Installation Node
+  #   Source: FORCEKIT by Weiss Robotics, 1.0.0, Weiss Robotics GmbH & Co. KG
+  #   Type: FORCEKIT
+  FORCEKIT_sock_res = False
+  FORCEKIT_suspend_thread = False
+  FORCEKIT_thread_suspended = False
+  while (not FORCEKIT_sock_res):
+    FORCEKIT_sock_res = socket_open("192.168.1.30",1000)
+    if (not FORCEKIT_sock_res):
+      popup("Could not connect to Force Torque Sensor. Make sure the the sensor is powered on and check the cabling. Click Continue to try again.", "FORCEKIT Error", False, True, blocking=True)
+    end
+  end
+  enable_external_ft_sensor( True, sensor_mass = 0.43, sensor_measuring_offset = [0.0, 0.0, 0.047], sensor_cog = [0.0, 0.0, 0.022] )
+  # end: URCap Installation Node
+  $ 1 "BeforeStart"
+  $ 2 "enable_external_ft_sensor( True , sensor_mass = 0.0,  sensor_measuring_offset = [0.0, 0.0, 0.0], sensor_cog = [0.0, 0.0, 0.0] )"
+  enable_external_ft_sensor(  True  , sensor_mass = 0.0,  sensor_measuring_offset = [0.0, 0.0, 0.0], sensor_cog = [0.0, 0.0, 0.0] )
+  $ 3 "sock_res≔ True "
+  global sock_res=  True  
+  $ 4 "Loop  not sock_res"
+  while (  not  sock_res):
+    $ 5 "sock_res=socket_open('192.168.1.30',1000)"
+    sock_res=socket_open("192.168.1.30",1000)
+  end
+  $ 6 "res≔''"
+  global res=""
+  $ 7 "Loop res ≟ ''"
+  while (res  ==  ""):
+    $ 8 "socket_send_line('TARE(1)')"
+    socket_send_line("TARE(1)")
+    $ 9 "res=socket_read_string()"
+    res=socket_read_string()
+  end
+  $ 10 "write_output_boolean_register(0, False)"
+  write_output_boolean_register(0, False)
+  $ 11 "Wait: 0.01"
+  sleep(0.01)
+  $ 12 "popup('Registers reset, run PC code and then click Continue', title='Hi DMT', blocking = True)"
+  popup("Registers reset, run PC code and then click Continue", title="Hi DMT", blocking = True)
+  $ 13 "mode≔0"
+  global mode=0
+  $ 86 "Thread_1"
+  thread Thread_1():
+    while (True):
+      $ 87 "tmp≔p[0,0,0,0,0,0]"
+      global tmp=p[0,0,0,0,0,0]
+      $ 88 "Loop"
+      while (True):
+        $ 89 "Script: pose_register.script"
+        tmp[0]=read_input_float_register(0)
+        tmp[1]=read_input_float_register(1)
+        tmp[2]=read_input_float_register(2)
+        tmp[3]=read_input_float_register(3)
+        tmp[4]=read_input_float_register(4)
+        tmp[5]=read_input_float_register(5)
+        $ 90 "sync()"
+        sync()
+        $ 91 "mode≔read_input_integer_register(0)"
+        global mode=read_input_integer_register(0)
+        $ 92 "sync()"
+        sync()
+      end
+    end
+  end
+  threadId_Thread_1 = run Thread_1()
+  $ 14 "Robot Program"
+  $ 15 "write_output_boolean_register(0, True)"
+  write_output_boolean_register(0, True)
+  $ 16 "sync()"
+  sync()
+  $ 17 "Loop mode<4"
+  while (mode<4):
+    $ 18 "MoveL"
+    $ 19 "Waypoint_2" "breakAfter"
+    movel(p[.571904398810, .170600397676, .376040180753, -3.067229565274, -.606860299615, .128604308756], a=1.2, v=0.25)
+    $ 20 "Loop mode==1"
+    thread Thread_while_20():
+      while (True):
+        $ 21 "write_output_boolean_register(0, True)"
+        write_output_boolean_register(0, True)
+        $ 22 "sync()"
+        sync()
+        $ 23 "MoveL"
+        $ 24 "Waypoint_GO_set" "breakAfter"
+        movel(p[.425345031319, -.143617298242, .159527954520, -3.140596613855, -.000372197390, -.000431918865], a=1.2, v=0.25)
+        $ 25 "Force"
+        sleep(0.02)
+        force_mode(p[0.0,0.0,0.0,0.0,0.0,0.0], [0, 0, 1, 0, 0, 0], [0.0, 0.0, -6.0, 0.0, 0.0, 0.0], 2, [0.1, 0.1, 0.15, 0.3490658503988659, 0.3490658503988659, 0.3490658503988659])
+        $ 26 "Wait: 1.0" "noBreak"
+        sleep(1.0)
+        $ 27 "MoveL" "noBreak"
+        $ 28 "Waypoint_3" "noBreak"
+        movel(pose_add(get_forward_kin(), pose_sub(p[.345340360769, -.143622760778, .159512942612, -3.140538087944, -.000662798623, -.000336786337], p[.425348834005, -.143636373844, .159523643768, -3.140591022424, -.000447021463, -.000364717331])), a=1.2, v=0.25)
+        end_force_mode()
+        stopl(5.0)
+        $ 29 "Loop 4 times"
+        Loop_8 = 0
+        while (Loop_8 < 4):
+          $ 30 "MoveL"
+          $ 31 "Waypoint_1" "breakAfter"
+          movel(pose_add(get_forward_kin(), pose_sub(p[.420309850282, -.078603547602, .162495181188, -3.140549582609, -.000767068423, -.000153103940], p[.420336072266, -.078633698333, .159532786518, -3.140635277432, -.000679806945, -.000251320033])), a=1.2, v=0.25)
+          $ 32 "MoveL"
+          $ 33 "Waypoint_G23" "breakAfter"
+          movel(pose_add(get_forward_kin(), pose_sub(p[.420327137464, -.078624757606, .159523644674, -3.140628826866, -.000699113666, -.000167773638], p[.345312478016, -.143593295234, .159488082689, -3.140510334777, -.000700167803, -.000272291988])), a=0.3, v=0.05)
+          $ 34 "MoveL"
+          $ 35 "Waypoint_G4O" "breakAfter"
+          movel(pose_add(get_forward_kin(), pose_sub(p[.409861541557, -.222418862538, .098846000737, 3.140999542271, .000000355344, -.000001005048], p[.409861512549, -.222418836401, .100845956068, 3.140999701864, .000000355426, -.000001283224])), a=0.3, v=0.05)
+          $ 36 "Force"
+          sleep(0.02)
+          force_mode(p[0.0,0.0,0.0,0.0,0.0,0.0], [0, 0, 1, 0, 0, 0], [0.0, 0.0, -1.0, 0.0, 0.0, 0.0], 2, [0.1, 0.1, 0.15, 0.3490658503988659, 0.3490658503988659, 0.3490658503988659])
+          $ 37 "Wait: 1.0" "noBreak"
+          sleep(1.0)
+          $ 38 "MoveL" "noBreak"
+          $ 39 "Waypoint_3" "noBreak"
+          movel(pose_add(get_forward_kin(), pose_sub(p[.345340360769, -.143622760778, .159512942612, -3.140538087944, -.000662798623, -.000336786337], p[.425348834005, -.143636373844, .159523643768, -3.140591022424, -.000447021463, -.000364717331])), a=1.2, v=0.25)
+          end_force_mode()
+          stopl(5.0)
+          Loop_8 = Loop_8 + 1
+        end
+        $ 40 "MoveL"
+        $ 41 "Waypoint_2" "breakAfter"
+        movel(p[.571904398810, .170600397676, .376040180753, -3.067229565274, -.606860299615, .128604308756], a=1.2, v=0.25)
+        $ 42 "write_output_boolean_register(0, False)"
+        write_output_boolean_register(0, False)
+        $ 43 "sync()"
+        sync()
+      end
+    end
+    if (mode==1):
+      global thread_handler_20=run Thread_while_20()
+      while (mode==1):
+        sync()
+      end
+      kill thread_handler_20
+    end
+    $ 58 "Loop mode==3"
+    thread Thread_while_58():
+      while (True):
+        $ 59 "write_output_boolean_register(0, True)"
+        write_output_boolean_register(0, True)
+        $ 60 "write_output_boolean_register(32, True)"
+        write_output_boolean_register(32, True)
+        $ 61 "MoveL"
+        $ 62 "Waypoint_SO_set" "breakAfter"
+        movel([3.1480765342712402, -1.3464439550982874, 2.2584009170532227, -2.489250961934225, 4.704554080963135, 4.333711624145508], t=2.0)
+        $ 63 "sync()"
+        sync()
+        $ 64 "MoveL"
+        $ 65 "Waypoint_SO1" "breakAfter"
+        movel(pose_add(get_forward_kin(), pose_sub(p[.685650551933, .173611797452, .183777961130, -3.082369752544, -.606056352377, -.010357695058], p[.600643239106, .173605452916, .183787344962, -3.082280970360, -.605841472551, -.010434931900])), t=1.5)
+        $ 68 "MoveL"
+        $ 69 "Waypoint_S12" "breakAfter"
+        movel(pose_add(get_forward_kin(), pose_sub(p[.786107859175, .171090785633, .164678957185, -3.083348216684, -.601374192195, -.010554725384], p[.685629373839, .173588947036, .183769613578, -3.082359016535, -.605958997479, -.010309185760])), a=0.2, v=0.1)
+        $ 70 "Wait: 0.5"
+        sleep(0.5)
+        $ 77 "write_output_boolean_register(32, False)"
+        write_output_boolean_register(32, False)
+        $ 78 "sync()"
+        sync()
+        $ 79 "MoveL"
+        $ 80 "Waypoint_S23" "breakAfter"
+        movel(pose_add(get_forward_kin(), pose_sub(p[.710561072023, .173463520661, .163110497701, -3.082295757953, -.606255725014, -.010459867585], p[.785647686556, .173445040673, .163162907401, -3.082392000545, -.605967567824, -.010699394012])), a=0.2, v=0.03)
+        $ 81 "write_output_boolean_register(0, False)"
+        write_output_boolean_register(0, False)
+        $ 82 "sync()"
+        sync()
+      end
+    end
+    if (mode==3):
+      global thread_handler_58=run Thread_while_58()
+      while (mode==3):
+        sync()
+      end
+      kill thread_handler_58
+    end
+    $ 83 "Loop mode==4"
+    thread Thread_while_83():
+      while (True):
+        $ 84 "Halt"
+        halt
+      end
+    end
+    if (mode==4):
+      global thread_handler_83=run Thread_while_83()
+      while (mode==4):
+        sync()
+      end
+      kill thread_handler_83
+    end
+  end
+  $ 85 "sync()"
+  sync()
+end
