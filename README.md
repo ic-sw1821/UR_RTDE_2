@@ -11,10 +11,12 @@ https://www.universal-robots.com/articles/ur/interface-communication/real-time-d
 
 `control_loop_configuration.xml`: contains list of the registers to be read and overwritten.
 
-`TheChosen3.py`: the main Python code for coordinating with .urp code and Arduino to be run in the folder.
+`UR10 Scratch test program.py`: the main Python code for coordinating with .urp code and Arduino to be run in the folder.
 
 #### --- How to run the program? ---
 After downloading the rtde folder as well as all the python packages in this repositiory, uploading the urp file to the robot, and storing the ino code on the Arduino:
 1) Run the urp file on the robot till a "Continue" button appears
 2) Run the python script
 3) Click "Continue" on the polyscope
+
+
